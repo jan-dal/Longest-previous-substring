@@ -21,18 +21,14 @@
 * @return Returns a pointer to the suffix array.
 **/
 int *suffix_array(int *str, int str_len) {
-
-    printf("Calculating suffix array for:\n");
-    for (int i = 0; i < str_len; i++) {
-        printf("%d ", str[i]);
-    }
-    printf("\n");
+    LOG_MESSAGE("Calculating suffix array for:\n")
+    LOG_FUNC(printf_line, str, str_len)
 
     tuple_info *tinfo12 = str_to_tuples(str, str_len);
     tinfo12->tuple_sorting = radix_sort(tinfo12, TUPLE_SIZE);
     int *tuple_names = name_tuples(tinfo12);
 
-    print_tuple_info(tinfo12);
+    LOG_FUNC(print_tuple_info, tinfo12)
 
     if (tinfo12->max_name != tinfo12->total_blocks) {
         int *sa12 = suffix_array(tuple_names, tinfo12->total_blocks);
@@ -44,20 +40,17 @@ int *suffix_array(int *str, int str_len) {
     int *sa12r = reverse_suffix_array(tinfo12->tuple_sorting, tinfo12->total_blocks);
 
     tuple_info *tinfo0 = create_t0(tinfo12, str, str_len);
-    int *sorting0 = counting_sort(tinfo0->values, tinfo0->tuple_sorting, tinfo0->total_blocks > MIN_LEN ? tinfo0->total_blocks : MIN_LEN, tinfo0->total_blocks, TUPLE_SIZE-1);
+    int *sorting0 = counting_sort(tinfo0->values, NULL, str_len > MIN_LEN ? str_len : MIN_LEN, tinfo0->total_blocks, TUPLE_SIZE-1);
     tinfo0->tuple_sorting = sorting0;
 
-    print_sa_from_tinfo(str, str_len, tinfo12, "SUFFIX ARRAY FOR SA12");
-    print_sa_from_tinfo(str, str_len, tinfo0, "SUFFIX ARRAY FOR SA0");
+    LOG_FUNC(print_sa_from_tinfo, str, str_len, tinfo12, "SUFFIX ARRAY FOR SA12")
+    LOG_FUNC(print_sa_from_tinfo, str, str_len, tinfo0, "SUFFIX ARRAY FOR SA0")
 
     int *sa = merge(str, sa12r, tinfo0, tinfo12);
     free(sa12r);
 
-    printf("SUFFIX ARRAY TEST:\n");
-    for (int i = 0; i < str_len; i++) {
-        printf("%d ", sa[i]);
-    }
-    printf("\n");
+    LOG_MESSAGE("Calculated suffix array:\n");
+    LOG_FUNC(printf_line, sa, str_len)
 
     cleanup_tinfo(tinfo0);
     cleanup_tinfo(tinfo12);
@@ -100,6 +93,8 @@ int *counting_sort(int (*values)[TUPLE_SIZE], int *prev_sorting, int n, int out_
     int *sorting = calloc(out_len, sizeof(int));
     
     for (int j = 0; j < out_len; j++) {
+        // printf("n = %d out_len = %d Invalid?: ", n, out_len);
+        // printf_line(values[j], TUPLE_SIZE);
         count[values[j][stage]]++;
     }
 
@@ -168,6 +163,7 @@ int *name_tuples(tuple_info *tinfo) {
 * @return Returns the reversed suffix array.
 **/
 int *reverse_suffix_array(int *sa, int len) {
+    LOG_MESSAGE("Reversing suffix array\n")
     int *sar = malloc(sizeof(int) * (len + TUPLE_SIZE));
     for (int i = 0; i < len; i++) {
         sar[sa[i]] = i;
@@ -175,6 +171,7 @@ int *reverse_suffix_array(int *sa, int len) {
     for (int i = len; i < len + TUPLE_SIZE; i++) {
         sar[i] = -1;
     }
+    LOG_MESSAGE("Reversing successful\n")
     return sar;
 }
 
@@ -193,16 +190,10 @@ int *reverse_suffix_array(int *sa, int len) {
 * @return Returns the reversed suffix array.
 **/
 int *merge(int *str, int *sa12r, tuple_info *tinfo0, tuple_info *tinfo12) {
-    printf("\n\n===========> MERGING TESTTESTEST\n\n");
+    LOG_MESSAGE("Merging\n");
     int *sa = malloc(sizeof(int) * (tinfo0->total_blocks + tinfo12->total_blocks));
     int i0 = 0, i12 = 0; // Counts position in sa_12, sa_0
     int k = 0;
-
-    printf("SA12 REVERSE\n");
-    for (int i=0; i < tinfo12->total_blocks; i++) {
-        printf("%d ", sa12r[i]);
-    }
-    printf("\n");
 
     int *m02 = malloc(2*sizeof(int));
     int *m12 = malloc(2*sizeof(int));
@@ -212,41 +203,33 @@ int *merge(int *str, int *sa12r, tuple_info *tinfo0, tuple_info *tinfo12) {
 
 
     while(i0 < tinfo0->total_blocks && i12 < tinfo12->total_blocks) {
-        printf("\n------------------------ i : %d, j : %d\n", i12, i0);
+        LOG_MESSAGE("\n------------------------ i : %d, j : %d\n", i12, i0)
+
         int cr;
         int pos_12 = tinfo12->positions[tinfo12->tuple_sorting[i12]];
         int pos_0  = tinfo0->positions[tinfo0->tuple_sorting[i0]];
 
-        printf("Comparing: \n");
-        printf("%d: ", pos_0);
-        print_suffix(str, tinfo0->total_blocks + tinfo12->total_blocks, pos_0);
-        printf(" and ");
-        printf("%d: ", pos_12);
-        print_suffix(str, tinfo0->total_blocks + tinfo12->total_blocks, pos_12);
-        printf("\n");        
+        LOG_MESSAGE("Comparing: \n")
+        LOG_MESSAGE("%d: ", pos_0)
+        LOG_FUNC(printf_line, str+pos_0, tinfo0->total_blocks + tinfo12->total_blocks)
+        LOG_MESSAGE(" and ")
+        LOG_MESSAGE("%d: ", pos_12)
+        LOG_FUNC(printf_line, str+pos_12, tinfo0->total_blocks + tinfo12->total_blocks)
+        LOG_MESSAGE("\n")      
 
-        // Case 1. We have a block mod 1
         if (tinfo12->tuple_type[tinfo12->tuple_sorting[i12]] == 1) {
-            printf("Case 1\n");
+            LOG_MESSAGE("Case 1\n");
             m02[0] = str[pos_0];
             m02[1] = sa12r[tinfo12->positions_rev[pos_0 + 1]];
 
             m12[0] = str[pos_12];
             m12[1] = sa12r[tinfo12->positions_rev[pos_12 + 1]]; // We are safe from overflowing because sa_rev has -1 at the end
 
-            printf("0 pos: %d -> + 1 -> block: %d is in: %d\n",
-            pos_0, tinfo12->positions_rev[pos_0 + 1], sa12r[tinfo12->positions_rev[pos_0 + 1]]);
-
-            printf("Tuple mod 2: %d -> + 1 -> block: %d is in: %d\n",
-            pos_12, tinfo12->positions_rev[pos_12 + 1], sa12r[tinfo12->positions_rev[pos_12 + 1]]);
-            
-            printf("m0: (%d, %d) vs m12: (%d, %d)\n", m02[0], m02[1], m12[0], m12[1]);
-
+            LOG_MESSAGE("m0: (%d, %d) vs m12: (%d, %d)\n", m02[0], m02[1], m12[0], m12[1]);
             cr = compare(m02, m12, 2);
         } 
-        // Case 2. We have a block mod 2
         else {
-            printf("Case 2\n");
+            LOG_MESSAGE("Case 2\n");
             m03[0] = str[pos_0];
             m03[1] = str[pos_0 + 1];
             m03[2] = sa12r[tinfo12->positions_rev[pos_0 + 2]];
@@ -254,16 +237,16 @@ int *merge(int *str, int *sa12r, tuple_info *tinfo0, tuple_info *tinfo12) {
             m23[0] = str[pos_12];
             m23[1] = str[pos_12 + 1];
             m23[2] = sa12r[tinfo12->positions_rev[pos_12 + 2]];
-            printf("m0: (%d, %d, %d) vs m12: (%d, %d, %d)\n", m03[0], m03[1], m03[2], m23[0], m23[1], m23[2]);
-
+            
+            LOG_MESSAGE("m0: (%d, %d, %d) vs m12: (%d, %d, %d)\n", m03[0], m03[1], m03[2], m23[0], m23[1], m23[2]);
             cr = compare(m03, m23, 3);
         }
         if (cr <= 0) {
-            printf("%d won\n", pos_0);
+            LOG_MESSAGE("%d won\n", pos_0);
             sa[k++] = pos_0;
             i0 += 1;
         } else {
-            printf("%d won\n", pos_12);
+            LOG_MESSAGE("%d won\n", pos_12);
             sa[k++] = pos_12;
             i12 += 1;
         }
@@ -291,7 +274,7 @@ int *merge(int *str, int *sa12r, tuple_info *tinfo0, tuple_info *tinfo12) {
 *
 **/
 tuple_info *str_to_tuples(int *str, int str_len) {
-    printf("Creating new tuples\n");
+    LOG_MESSAGE("Creating new tuples\n")
     tuple_info *tinfo = malloc(sizeof(tuple_info));
     tinfo->total_blocks = str_len - (str_len + 2)/3;
 
@@ -320,7 +303,7 @@ tuple_info *str_to_tuples(int *str, int str_len) {
     for (int i = str_len; i < str_len + TUPLE_SIZE; i++) {
         tinfo->positions_rev[i] = tinfo->total_blocks;
     }
-    printf("Allocated %d tuples.\n", tinfo->total_blocks);
+    LOG_MESSAGE("Allocated %d tuples.\n", tinfo->total_blocks)
     return tinfo;
 }
 
@@ -337,6 +320,7 @@ tuple_info *str_to_tuples(int *str, int str_len) {
 *
 **/
 tuple_info *create_t0(tuple_info *tinfo12, int *str, int str_len) {
+    LOG_MESSAGE("Creating t0\n")
     tuple_info *tinfo0 = malloc(sizeof(tuple_info));
 
     tinfo0->total_blocks = (str_len+2)/3;
@@ -353,20 +337,14 @@ tuple_info *create_t0(tuple_info *tinfo12, int *str, int str_len) {
         if (tinfo12->tuple_type[idx] == 1) {
             tinfo0->positions[k] = tinfo12->positions[idx] - 1;
             tinfo0->values[k++][TUPLE_SIZE-1] = str[tinfo12->positions[idx] - 1];
-
-            printf("letter: '%d' at %d\n", 
-                str[tinfo12->positions[idx] - 1], 
-                tinfo12->positions[idx] - 1
-            );
         }
     }
 
     if (str_len % 3 == 1) {
         tinfo0->positions[k] = str_len - 1;
         tinfo0->values[k][TUPLE_SIZE - 1] = str[str_len-1];
-        printf("letter: '%d' at %d\n", str[str_len-1], str_len-1);
     }
-
+    LOG_MESSAGE("t0 created\n")
     return tinfo0;
 }
 
@@ -410,10 +388,12 @@ void print_tuple_info(tuple_info *tinfo) {
     free(tmp);
 }
 
-void print_suffix(int *str, int str_len, int pos) {
-    for (int j = pos; j < str_len; j++) {
-        int val = str[j];
-        printf(isprint(val) ? "%c" : "'%d'", val);
+void print_suffix_array(int *str, int *sa, int len) {
+    for (int i = 0; i < len; i++) {
+        int pos = sa[i];
+        printf("%d\t", pos);
+        fwrite(str + pos,  sizeof(int), len - pos,stdout);
+        printf("\n");
     }
 }
 
@@ -426,12 +406,19 @@ void print_sa_from_tinfo(int *str, int str_len, tuple_info *tinfo, char *title) 
     for (int i = 0; i < tinfo->total_blocks; i++) {
         int pos = tinfo->positions[tinfo->tuple_sorting[i]];
         printf("%d ", pos);
-        print_suffix(str, str_len, pos);
+        printf_line(str+pos, str_len );
         printf("\n");
     }
     printf("\n");
 }  
 
+void printf_line(int *str, int str_len) {
+    for (int i = 0; i < str_len; i++) {
+        int val = str[i];
+        printf(isprint(val) ? "%c" : "'%d'", val);
+    }
+    printf("\n");
+}
 
 void cleanup_tinfo(tuple_info *tinfo) {
     free(tinfo->values);
