@@ -1,2 +1,4 @@
-int *radix_sort(unsigned char *w, int stages, int offset);
-int *merge_radix(unsigned char* w1, unsigned char* w2, int *arr1, int *arr2);
+#include "constants.h"
+
+int *radix_sort(tuple_info *tinfo, int stages);
+int *counting_sort(int (*values)[TUPLE_SIZE], int *prev_sorting, int n, int out_len, int stage);

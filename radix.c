@@ -1,77 +1,65 @@
-#include "constants.h"
 #include "radix.h"
 #include <stdlib.h>
 #include <string.h>
 
-
-int *radix_sort(unsigned char *w, int stages, int offset) {
-    int len = (strlen((char *)w) + DIV - 1 - offset) / DIV;
-    w = w + offset;
-
-
-    int **buckets = malloc(sizeof(char*)*(stages+1));
-    for (int j = 0; j <= stages; j++) {
-        buckets[j] = malloc(sizeof(char)*len);
-    }
-    int *out = buckets[0];
-
-    for (int i = 0; i < len; i++) {
-        buckets[stages][i] = i; 
-    }
-
+/**
+* @brief Radix sort for the tuple structure.
+*
+* @param[in,out] tinfo The tuple info structure. The tuple_sorting is set at the end.
+* @param[in] stages The number of loops to perform counting sort starting from the last elements.
+*
+**/
+int *radix_sort(tuple_info *tinfo, int stages) {
+    int *prev_sorting = NULL, *sorting = NULL;
+    int n = tinfo->total_blocks * TUPLE_SIZE > MIN_LEN ? tinfo->total_blocks * TUPLE_SIZE : MIN_LEN;
+    int out_len = tinfo->total_blocks;
+    
     for (int i = stages-1; i >= 0; i--) {
-        int count[ALPHABET_SIZE] = {0};
-
-        for (int j = 0; j < len; j++) {
-            count[w[DIV*j + i]]++;
-        }
-
-        for (int j = 1; j < ALPHABET_SIZE; j++) {
-            count[j] += count[j-1];
-        }
-
-        for (int j = len - 1; j >= 0; j--) {
-            int tmp = w[DIV*buckets[i+1][j] + i];
-            count[tmp]--; 
-            buckets[i][count[tmp]] = buckets[i+1][j]; 
-        }
-        free(buckets[i+1]);
+        sorting = counting_sort(tinfo->values, prev_sorting, n, out_len, i);
+        free(prev_sorting);
+        prev_sorting = sorting;
     }
-
-    for (int i = 0; i < len; i++) {
-        out[i] = out[i]*DIV + offset;
-    }
-
-    free(buckets);
-    return out;
+    return sorting;
 }
 
+/**
+* @brief Counting sort which performs one sorting iteration for the radix sort.
+*
+* @param[in] values The tuples to perform the sorting on.
+* @param[in] prev_sorting The previous sorting for the tuples (on the old index). ID if this is the first round.
+* @param[in] n The number of individual values (tuple count * TUPLE_SIZE).
+* @param[in] out_len The output array size.
+* @param[in] stage Index in the value array.
+*
+**/
+int *counting_sort(int (*values)[TUPLE_SIZE], int *prev_sorting, int n, int out_len, int stage) {
+    int *count = calloc(n, sizeof(int));
+    int *sorting = calloc(out_len, sizeof(int));
+    
+    for (int j = 0; j < out_len; j++) {
+        // printf("n = %d out_len = %d Invalid?: ", n, out_len);
+        // printf_line(values[j], TUPLE_SIZE);
+        count[values[j][stage]]++;
+    }
 
-int *merge_radix(unsigned char* w1, unsigned char* w2, int *arr1, int *arr2) {
-    int l1 = (strlen((char*)w1) + DIV - 1) / DIV;
-    int l2 = (strlen((char*)w2) + DIV - 1) / DIV;
-    int i = 0, j = 0, k = 0;
+    for (int j = 1; j < n; j++) {
+        count[j] += count[j-1];
+    }
 
-    int *out = malloc(sizeof(int)*(l1 + l2));
-
-    while (i < l1 && j < l2) {
-        int off = 0; 
-        while(w1[DIV*i + off] == w2[DIV*j + off] && off < DIV) {
-            off++;
+    if (prev_sorting == NULL) {
+        for (int j = out_len-1; j >= 0; j--) {
+            int tmp = values[j][stage];
+            count[tmp]--;
+            sorting[count[tmp]] = j; 
         }
-        if (w1[DIV*i + off] <= w2[DIV*j + off]) {
-            out[k++] = arr1[i++];
-        } else {
-            out[k++] = arr2[j++];
+    } else {
+        for (int j = out_len-1; j >= 0; j--) {
+            int tmp = values[prev_sorting[j]][stage];
+            count[tmp]--;
+            sorting[count[tmp]] = prev_sorting[j]; 
         }
     }
 
-    while (i < l1) {
-        out[k++] = arr1[i++];
-    }
-    while (j < l2) {
-        out[k++] = arr2[j++];
-    }
-
-    return out;
+    free(count);
+    return sorting;
 }
