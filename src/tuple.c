@@ -51,29 +51,20 @@ tuple_info *str_to_tuples(int *str, int str_len) {
 
     tinfo->positions = malloc(tinfo->total_blocks * sizeof(int));   
     tinfo->tuple_type = malloc(tinfo->total_blocks * sizeof(int));
-    tinfo->positions_rev = malloc((str_len + TUPLE_SIZE) * sizeof(int));
     tinfo->values = malloc(tinfo->total_blocks * sizeof(*tinfo->values));
     tinfo->tuple_sorting = NULL;
-
-    for (int i = 0; i < str_len; i++) {
-        tinfo->positions_rev[i] = -2;
-    }
 
     int k = 0;
     for (int j = 1; j < TUPLE_SIZE; j++) {
         for (int i = 0; 3*i + j + 2 < str_len + ADDITIONAL_PADDING; i++) {
             int index = 3*i + j;
             tinfo->positions[k] = index;
-            tinfo->positions_rev[index] = k; 
             tinfo->tuple_type[k] = j;
             for (int q = 0; q < TUPLE_SIZE; q++) {
                 tinfo->values[k][q] = str[index+q];
             }
             k++;
         }
-    }
-    for (int i = str_len; i < str_len + TUPLE_SIZE; i++) {
-        tinfo->positions_rev[i] = tinfo->total_blocks;
     }
     LOG_MESSAGE("Allocated %d tuples.\n", tinfo->total_blocks);
     return tinfo;
@@ -100,7 +91,6 @@ tuple_info *create_t0(tuple_info *tinfo12, int *str, int str_len) {
     tinfo0->values = malloc(tinfo0->total_blocks * sizeof(*tinfo0->values));
 
     tinfo0->tuple_type = NULL;
-    tinfo0->positions_rev = NULL;
     tinfo0->tuple_sorting = NULL;
 
     int k = 0;
@@ -129,7 +119,6 @@ tuple_info *create_t0_ordered(tuple_info *tinfo12, int *str, int str_len) {
     tinfo0->values = malloc(tinfo0->total_blocks * sizeof(*tinfo0->values));
 
     tinfo0->tuple_type = NULL;
-    tinfo0->positions_rev = NULL;
     tinfo0->tuple_sorting = NULL;
 
     int k = 0;
@@ -207,7 +196,6 @@ void cleanup_tinfo(tuple_info *tinfo) {
     free(tinfo->positions);
     free(tinfo->tuple_type);
     free(tinfo->tuple_sorting);
-    free(tinfo->positions_rev);
     free(tinfo);
 }
 

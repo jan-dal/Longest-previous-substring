@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -O2
 DFLAGS = -g -O0
 TARGET = lpf
 DTARGET = lpf_debug
-SRC = main.c lpf.c suffix_array.c suffix_array_naive.c tuple.c radix.c
+SRC = $(wildcard src/*.c)
 
 all: $(TARGET)
 

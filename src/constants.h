@@ -19,7 +19,6 @@
 
 struct tuple_info {
     int *positions;
-    int *positions_rev;
     int *tuple_sorting;
     int *tuple_type;
     int (*values)[TUPLE_SIZE];
