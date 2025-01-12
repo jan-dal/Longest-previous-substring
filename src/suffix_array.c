@@ -56,6 +56,7 @@ int *suffix_array(int *str, int str_len) {
     tinfo12->tuple_sorting = radix_sort(tinfo12, TUPLE_SIZE);
     int *tuple_names = name_tuples(tinfo12);
 
+    LOG_MESSAGE("T12 info before reordering:\n");
     LOG_FUNC(print_tuple_info, tinfo12);
 
     if (tinfo12->max_name != tinfo12->total_blocks) {
@@ -72,6 +73,9 @@ int *suffix_array(int *str, int str_len) {
     tuple_info *tinfo0 = create_t0_ordered(tinfo12, str, str_len);
     int *sorting0 = counting_sort(tinfo0->values, NULL, str_len > MIN_LEN ? str_len : MIN_LEN, tinfo0->total_blocks, TUPLE_SIZE-1);
     tinfo0->tuple_sorting = sorting0;
+
+    LOG_MESSAGE("T12 info after reordering:\n");
+    LOG_FUNC(print_tuple_info, tinfo12);
 
     LOG_FUNC(print_sa_from_tinfo, str, str_len, tinfo12, "SUFFIX ARRAY FOR SA12");
     LOG_FUNC(print_sa_from_tinfo, str, str_len, tinfo0, "SUFFIX ARRAY FOR SA0");
@@ -107,6 +111,7 @@ int *suffix_array(int *str, int str_len) {
 **/
 int *merge(int *str, int *sa12r, tuple_info *tinfo0, tuple_info *tinfo12) {
     LOG_MESSAGE("Merging\n");
+    int str_len = tinfo0->total_blocks + tinfo12->total_blocks;
 
     int *str0 = _create_str(str, tinfo0->positions, tinfo0->total_blocks, 0);
     int *str10 = _create_str(str, tinfo0->positions, tinfo0->total_blocks, 1);
@@ -132,10 +137,9 @@ int *merge(int *str, int *sa12r, tuple_info *tinfo0, tuple_info *tinfo12) {
 
         LOG_MESSAGE("Comparing: \n");
         LOG_MESSAGE("%d: ", pos_0);
-        LOG_FUNC(printf_line, str+pos_0, tinfo0->total_blocks + tinfo12->total_blocks);
-        LOG_MESSAGE(" and ");
+        LOG_FUNC(printf_line, str+pos_0, str_len-pos_0);
         LOG_MESSAGE("%d: ", pos_12);
-        LOG_FUNC(printf_line, str+pos_12, tinfo0->total_blocks + tinfo12->total_blocks);
+        LOG_FUNC(printf_line, str+pos_12, str_len-pos_12);
         LOG_MESSAGE("\n");
  
         if (tinfo12->tuple_type[i12] == 1) {

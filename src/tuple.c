@@ -122,6 +122,12 @@ tuple_info *create_t0_ordered(tuple_info *tinfo12, int *str, int str_len) {
     tinfo0->tuple_sorting = NULL;
 
     int k = 0;
+    if (str_len % 3 == 1) {
+        tinfo0->positions[0] = str_len - 1;
+        tinfo0->values[0][TUPLE_SIZE - 1] = str[str_len-1];
+        k++;
+    }
+
     for (int i = 0; i < tinfo12->total_blocks; i++) {
         int pos = tinfo12->positions[i];
         if (tinfo12->tuple_type[i] == 1) {
@@ -129,11 +135,7 @@ tuple_info *create_t0_ordered(tuple_info *tinfo12, int *str, int str_len) {
             tinfo0->values[k++][TUPLE_SIZE-1] = str[pos - 1];
         }
     }
-
-    if (str_len % 3 == 1) {
-        tinfo0->positions[k] = str_len - 1;
-        tinfo0->values[k][TUPLE_SIZE - 1] = str[str_len-1];
-    }
+    
     LOG_MESSAGE("t0 created\n");
     return tinfo0;
 }
@@ -178,14 +180,15 @@ void print_tuple_info(tuple_info *tinfo) {
 
 void print_sa_from_tinfo(int *str, int str_len, tuple_info *tinfo, char *title) {
     printf("\n%s\n", title);
+    printf("Sorting: ");
     for (int i = 0; i < tinfo->total_blocks; i++) {
         printf("%d ", tinfo->tuple_sorting[i]);
     } 
     printf("\n");
     for (int i = 0; i < tinfo->total_blocks; i++) {
-        int pos = tinfo->positions[tinfo->tuple_sorting[i]];
+        int pos = tinfo->positions[i];
         printf("%d ", pos);
-        printf_line(str+pos, str_len );
+        printf_line(str+pos, str_len-pos );
         printf("\n");
     }
     printf("\n");
