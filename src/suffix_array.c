@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <byteswap.h>
 
+
+// TEST: abbbaabbbabbb
+
+
 int *reorder(int *arr, int *sorting, int len) {
     int *reorder = malloc(len * sizeof(int));
     for (int i = 0; i < len; i++) {
@@ -118,7 +122,7 @@ int *merge(int *str, int *sa12r, tuple_info *tinfo0, tuple_info *tinfo12) {
     int *str12 = _create_str(str, tinfo12->positions, tinfo12->total_blocks, 0);
     int *str012 = _create_str(str, tinfo12->positions, tinfo12->total_blocks, 1);
 
-    int *sa = malloc(sizeof(int) * (tinfo0->total_blocks + tinfo12->total_blocks));
+    int *sa = malloc(sizeof(int) * str_len);
     int i0 = 0, i12 = 0; // Counts position in sa_12, sa_0
     int k = 0;
 
@@ -220,7 +224,7 @@ int *reverse_suffix_array(int *positions, int elements, int len) {
 void print_suffix_array(int *str, int *sa, int len) {
     for (int i = 0; i < len; i++) {
         int pos = sa[i];
-        printf("%d\t", pos);
+        printf("SA[%d] = %d\t", i, pos);
         fwrite(str + pos,  sizeof(int), len - pos,stdout);
         printf("\n");
     }

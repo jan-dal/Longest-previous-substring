@@ -1,0 +1,1 @@
+int *lcp_array(int *str, int *sa, int len);

@@ -7,7 +7,7 @@
 #define MIN_LEN 127
 #define TUPLE_SIZE 3
 #define ADDITIONAL_PADDING 2
-#define DEBUG 0
+#define DEBUG 1
 
 #if DEBUG
     #define LOG_MESSAGE(...) printf(__VA_ARGS__)
