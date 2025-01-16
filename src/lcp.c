@@ -27,6 +27,7 @@ int *lcp_array(int *str, int *sa, int len) {
 
     for (int i = 0; i < len; i++) {
         int pos = sar[i]-1;
+        if (pos == 0) {continue;}
         int ppos = sa[pos - 1];
         int m = ppos > i ? len - ppos - k : len - i - k;        
 
@@ -44,6 +45,7 @@ int *lcp_array(int *str, int *sa, int len) {
             k--;
         }
     }
+    free(sar);
 
     return lcp;
 }

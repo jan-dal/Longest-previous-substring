@@ -8,33 +8,35 @@
 #include <time.h>
 #include <string.h>
 
-void validate(int str_len, int tries) {
-    int *str = malloc((str_len+ADDITIONAL_PADDING) * sizeof(int));
+void validate(int str_len, int tries) { 
     int *sa1, *sa2;
+    int *str = malloc((str_len + ADDITIONAL_PADDING) * sizeof(int));
+    str = random_str(str, str_len);
+    sa1 = suffix_array(str, str_len);
+    sa2 = suffix_array_qsort(str, str_len);
+   
     for (int i = 0; i < tries; i++) {
-        str = random_str(str, str_len);
-        sa1 = suffix_array(str, str_len);
-        sa2 = suffix_array_qsort(str, str_len);
-
         int bug = 0;
-        for (int i = 0; i < str_len; i++) {
-            if (sa1[i] != sa2[i]) {
-                printf("BUG: Suffix array differ! %d\n", i);
-                bug = 1;
+        for (int k = 0; k < str_len; k++) {
+            if (sa1[k] != sa2[k]) {
+                printf("BUG: Suffix array differ! %d\n", k);
+                fwrite(str + sa1[k],  sizeof(int), str_len - sa1[k],stdout);
+                printf("\n");
+                fwrite(str + sa2[k],  sizeof(int), str_len - sa2[k],stdout);
+                printf("\n");
+                bug = 1; 
             }
         }
         if (bug) {
             printf_line(str, str_len);
-            print_suffix_array(str, sa1, str_len);
-            printf("\n");
-            print_suffix_array(str, sa2, str_len);
+        // print_suffix_array(str, sa1, str_len);
+        // printf("\n");
+        // print_suffix_array(str, sa2, str_len);
         }
-        
-        free(sa1);
-        free(sa2);
         if (bug) {break;}
     }
-
+    free(sa1);
+    free(sa2);
     free(str);   
 }
 
@@ -67,7 +69,7 @@ int *random_str(int *str, int str_len) {
     if (str == NULL) {
         str = malloc(str_len * sizeof(int));
     }
-
+ 
     srand((unsigned int)time(NULL));
 
     for (int i = 0; i < str_len; i++) {

@@ -1,6 +1,24 @@
 #include "radix.h"
+#include "constants.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+
+void print_sorting(int (*values)[TUPLE_SIZE], int *sorting, int n) {
+    printf("Sorting len: %d\n", n);
+    for (int i = 0; i < n; i++) {
+        int idx = sorting[i];
+        printf("[%d]: %d %d %d\n", idx, values[idx][0], values[idx][1], values[idx][2]);
+    }
+}
+
+void print_values(int (*values)[TUPLE_SIZE], int n) {
+    printf("Sorting len: %d\n", n);
+    for (int i = 0; i < n; i++) {
+        int idx = i;
+        printf("%d %d %d\n", values[idx][0], values[idx][1], values[idx][2]);
+    }
+}
 
 /**
 * @brief Radix sort for the tuple structure.
@@ -37,8 +55,6 @@ int *counting_sort(int (*values)[TUPLE_SIZE], int *prev_sorting, int n, int out_
     int *sorting = calloc(out_len, sizeof(int));
     
     for (int j = 0; j < out_len; j++) {
-        // printf("n = %d out_len = %d Invalid?: ", n, out_len);
-        // printf_line(values[j], TUPLE_SIZE);
         count[values[j][stage]]++;
     }
 

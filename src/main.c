@@ -3,12 +3,14 @@
 #include "constants.h"
 #include "suffix_array.h"
 #include "benchmark.h"
+#include "suffix_array_qsort.h"
 #include <getopt.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include "tuple.h"
 
 void print_help() {
     printf("Usage: program_name [options]\n");
@@ -51,16 +53,18 @@ void suffix_array_from_input() {
     free(input);
 
     int *sa = suffix_array(str, str_len);
+    int *lcp = lcp_array(str, sa, str_len);
+
+    // int *saq = suffix_array_qsort(str, str_len);
+    // printf_line(saq, str_len);
+
     print_suffix_array(str, sa, str_len);
 
-    
-    int *lcp = lcp_array(str, sa, str_len);
-    printf("\nLCP: ");
-    for (int i = 1; i < str_len; i++) {
-        printf("%d ", lcp[i]);
-    }
-    printf("\n");
+    printf("SA:  ");
+    printf_line(sa, str_len);
 
+    printf("LCP: ");
+    printf_line(lcp+1, str_len-1);
     printf("\n");
     free(sa);
     free(str);

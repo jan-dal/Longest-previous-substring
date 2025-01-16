@@ -1,4 +1,5 @@
 #include "tuple.h"
+#include "constants.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -19,10 +20,11 @@
 int *name_tuples(tuple_info *tinfo) {
     int *tuple_names = malloc(sizeof(int) * (tinfo->total_blocks + ADDITIONAL_PADDING));
     int *sorting = tinfo->tuple_sorting; 
-    int name = 1;
-    tuple_names[sorting[0]] = name;
+    tuple_names[sorting[0]] = 1;
 
+    int name = 1;
     for (int i = 1; i < tinfo->total_blocks; i++) {
+        // int cmp = compare_tuples(tinfo->values[sorting[i-1]], tinfo->values[sorting[i]], TUPLE_SIZE);
         int cmp = memcmp(tinfo->values[sorting[i-1]], tinfo->values[sorting[i]], TUPLE_SIZE * sizeof(int));
         if (cmp != 0) {
             name++;
@@ -47,67 +49,37 @@ int *name_tuples(tuple_info *tinfo) {
 tuple_info *str_to_tuples(int *str, int str_len) {
     LOG_MESSAGE("Creating new tuples\n");
     tuple_info *tinfo = malloc(sizeof(tuple_info));
-    tinfo->total_blocks = str_len - (str_len + 2)/3;
+    int extra_block = str_len % 3 == 1;
+    tinfo->total_blocks = (str_len - (str_len + 2)/3) + extra_block;
 
     tinfo->positions = malloc(tinfo->total_blocks * sizeof(int));   
     tinfo->tuple_type = malloc(tinfo->total_blocks * sizeof(int));
     tinfo->values = malloc(tinfo->total_blocks * sizeof(*tinfo->values));
     tinfo->tuple_sorting = NULL;
 
-    int k = 0;
-    for (int j = 1; j < TUPLE_SIZE; j++) {
-        for (int i = 0; 3*i + j + 2 < str_len + ADDITIONAL_PADDING; i++) {
-            int index = 3*i + j;
-            tinfo->positions[k] = index;
-            tinfo->tuple_type[k] = j;
-            for (int q = 0; q < TUPLE_SIZE; q++) {
-                tinfo->values[k][q] = str[index+q];
-            }
-            k++;
+    int k = 0, i = 1;
+    while(i < str_len + extra_block) {
+        tinfo->positions[k] = i;
+        tinfo->tuple_type[k] = 1;
+        for (int q = 0; q < TUPLE_SIZE; q++) {
+            tinfo->values[k][q] = str[i+q];
         }
+        k++;
+        i += 3;
+    }
+
+    i = 2;
+    while(i < str_len) {
+        tinfo->positions[k] = i;
+        tinfo->tuple_type[k] = 2;
+        for (int q = 0; q < TUPLE_SIZE; q++) {
+            tinfo->values[k][q] = str[i+q];
+        }
+        k++;
+        i += 3;
     }
     LOG_MESSAGE("Allocated %d tuples.\n", tinfo->total_blocks);
     return tinfo;
-}
-
-/**
-* @brief Creates the tuple info structure but only for letters mod 0.
-*
-* It is convinient to reuse the tuple info structure. 
-* The letters are at the least significant position in the values arrays.
-* The initial sorting of the letters is determined by the sorted tuples mod 1.
-*
-* @param[in] tinfo12 Tuple info for the sorted tuples mod 1 and mod 2.
-* @param[in] str The input string.
-* @param[in] str_len String length.
-*
-**/
-tuple_info *create_t0(tuple_info *tinfo12, int *str, int str_len) {
-    LOG_MESSAGE("Creating t0\n");
-    tuple_info *tinfo0 = malloc(sizeof(tuple_info));
-
-    tinfo0->total_blocks = (str_len+2)/3;
-    tinfo0->positions = malloc(tinfo0->total_blocks * sizeof(int));
-    tinfo0->values = malloc(tinfo0->total_blocks * sizeof(*tinfo0->values));
-
-    tinfo0->tuple_type = NULL;
-    tinfo0->tuple_sorting = NULL;
-
-    int k = 0;
-    for (int i = 0; i < tinfo12->total_blocks; i++) {
-        int idx = tinfo12->tuple_sorting[i];
-        if (tinfo12->tuple_type[idx] == 1) {
-            tinfo0->positions[k] = tinfo12->positions[idx] - 1;
-            tinfo0->values[k++][TUPLE_SIZE-1] = str[tinfo12->positions[idx] - 1];
-        }
-    }
- 
-    if (str_len % 3 == 1) {
-        tinfo0->positions[k] = str_len - 1;
-        tinfo0->values[k][TUPLE_SIZE - 1] = str[str_len-1];
-    }
-    LOG_MESSAGE("t0 created\n");
-    return tinfo0;
 }
 
 tuple_info *create_t0_ordered(tuple_info *tinfo12, int *str, int str_len) {
@@ -122,12 +94,6 @@ tuple_info *create_t0_ordered(tuple_info *tinfo12, int *str, int str_len) {
     tinfo0->tuple_sorting = NULL;
 
     int k = 0;
-    if (str_len % 3 == 1) {
-        tinfo0->positions[0] = str_len - 1;
-        tinfo0->values[0][TUPLE_SIZE - 1] = str[str_len-1];
-        k++;
-    }
-
     for (int i = 0; i < tinfo12->total_blocks; i++) {
         int pos = tinfo12->positions[i];
         if (tinfo12->tuple_type[i] == 1) {
@@ -171,6 +137,7 @@ void print_tuple_info(tuple_info *tinfo) {
         for (int j=0; j < TUPLE_SIZE; j++) {
             int val = tinfo->values[i][j];
             printf(isprint(val) ? "%c " : "'%d' ", val);
+            // printf("%d ", val);
         }
         printf("\n");
     }
@@ -203,9 +170,13 @@ void cleanup_tinfo(tuple_info *tinfo) {
 }
 
 void printf_line(int *str, int str_len) {
-    for (int i = 0; i < str_len; i++) {
+    printf("[");
+    for (int i = 0; i < str_len-1; i++) {
         int val = str[i];
-        printf(isprint(val) ? "%c" : "'%d'", val);
+        // printf("%d, ", val);
+        printf(isprint(val) ? "%c " : "%d ", val);
+        // printf("%d, ", val);
     }
+    printf(isprint(str[str_len-1]) ? "%c]" : "%d]", str[str_len-1]);
     printf("\n");
 }
