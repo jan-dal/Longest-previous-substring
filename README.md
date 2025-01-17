@@ -16,3 +16,8 @@ Given the string: w[1...28] := `ababbababaaabbababaabaabbbaa`, LPF[13] = 8
 ababbababaaa <b>bbababaa</b> baabbbaa w[13...13 + 8 - 1]
 aba <b>bbababaa</b> abbababaabaabbbaa w[4...4 + 8 - 1]
 </pre>
+
+## Results
+
+![LPF fib results](results/lpf_fib_benchmark.png)
+![SA fib results](results/sa_fib_benchmark.png)

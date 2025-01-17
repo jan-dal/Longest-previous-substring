@@ -27,7 +27,7 @@ void print_help() {
     printf("  ./PATH/TO/PROGRAM/lpf -s\n");
 }
 
-void suffix_array_from_input() {
+void suffix_array_from_input() { 
     char *input = NULL;
     size_t input_length = 0;
     ssize_t nread;
@@ -117,8 +117,9 @@ void lpf_array_from_input() {
 
  
 int main(int argc, char *argv[]) {
-    int size, tries, asize;
-    char type;
+    int size, tries, asize, str_type_arg;
+    char alg_type_arg;
+    StrType str_type = RANDOM;
     const char *short_opts = "hb:sv:l";
     const struct option long_opts[] = {
         {"help",    no_argument,       NULL, 'h'},
@@ -142,22 +143,40 @@ int main(int argc, char *argv[]) {
                 lpf_array_from_input();
                 return 0;
             case 'b':
-                type = argv[optind-1][0]; 
+                alg_type_arg = argv[optind-1][0];
+                str_type_arg = argv[optind-1][1];
                 size = atoi(argv[optind]);
                 tries = atoi(argv[optind+1]);
                 asize = atoi(argv[optind+2]);
-                if (type == 's') {
-                    benchmark_suffix_array(size, tries, asize);
-                } else {
-                    benchmark_lpf_array(size, tries, asize);
+
+                switch (str_type_arg) {
+                    case 'r':
+                        str_type = RANDOM;
+                        break;
+                    case 'f':
+                        str_type = FIBONACCI;
+                        break;
+                    default:
+                        str_type = RANDOM;
+                }
+
+                switch (alg_type_arg) {
+                    case 's':
+                        benchmark_runner(SUFFIX_ARRAY, str_type, size, tries, asize);
+                        return 0;
+                    case 'l':
+                        benchmark_runner(LPF, str_type, size, tries, asize);
+                        return 0;
+                    default:
+                        benchmark_runner(LPF, str_type, size, tries, asize);
                 }
                 return 0;
             case 'v':
-                type = argv[optind-1][0]; 
+                alg_type_arg = argv[optind-1][0]; 
                 size = atoi(argv[optind]);
                 tries = atoi(argv[optind+1]);
                 asize = atoi(argv[optind+2]);
-                if (type == 's') {
+                if (alg_type_arg == 's') {
                     validate_suffix_array(size, tries, asize);
                 } else {
                     validate_lpf(size, tries, asize);

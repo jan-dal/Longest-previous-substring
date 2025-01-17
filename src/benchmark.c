@@ -78,56 +78,96 @@ void validate_suffix_array(int str_len, int tries, int asize) {
     printf("SUCCESS!\n");
 }
 
-void benchmark_lpf_array(int str_len, int tries, int asize) {
-    printf("Running benchmark on lpf arrays %d times with random strings[1...%d], |∑| = %d\n", tries, str_len, asize); 
-
-    int *str = malloc((str_len+ADDITIONAL_PADDING) * sizeof(int));
-    double s1 = 0, s2 = 0;
-    
+void benchmark_runner(Algorithm alg, StrType str_type, int str_len, int tries, int asize) {
+    int *(*f)(int*, int);
+    int *(*f_naive)(int*, int);
     FILE *file;
-    char *filename = "lpf_results.csv";
+    char *filename, *header = TIME_BENCHMARK_HEADER;
+
+    switch (alg) {
+        case SUFFIX_ARRAY:
+            printf("Running benchmark on lpf arrays %d times with random strings[1...%d], |∑| = %d\n", tries, str_len, asize); 
+            f = suffix_array, f_naive = suffix_array_qsort; 
+            filename = SA_BENCH_FILENAME;
+            break;
+        case LCP:
+            printf("Running benchmark on lcp arrays %d times with random strings[1...%d], |∑| = %d\n", tries, str_len, asize); 
+            return;
+        case LPF:
+            printf("Running benchmark on lpf arrays %d times with random strings[1...%d], |∑| = %d\n", tries, str_len, asize); 
+            f = lpf_array, f_naive = lpf_array_naive;
+            filename = LPF_BENCH_FILENAME;
+            break;
+        default:
+            return; 
+    }
 
     file = fopen(filename, "a");
+
     if (file == NULL) {
         perror("Error opening file");
     }
 
-    for (int i = 0; i < tries; i++) {
-        str = random_str(str, str_len, asize);
-        s1 += timeit(lpf_array, str, str_len);
-        s2 += timeit(lpf_array_naive, str, str_len);
+    int datapoints = 28;
+    data_frame *data = create_data_frame(datapoints, filename, header);
+
+    for (int i = 0; i < datapoints; i++) {
+        // str_len = (2 << i) + (2 << (i-1));
+        // str_len = (2 << i);
+        str_len = i+2;
+        printf("String length: %d\n", str_len);
+        benchmark(f, f_naive, data, str_type, str_len, tries, asize, i);
+        printf("\n");
     }
-    s1 /= tries;
-    s2 /= tries;
-    
-    // Write a line to the file
-    if (fprintf(file, "%d,%d,%d,%lld,%lld\n", str_len, tries, asize, (long long)(1e9 * s1), (long long)(1e9 * s2)) < 0) {
-        perror("Error writing to file");
-        fclose(file);
-    }
-    
-    printf("O(n):   %lld ns per call (%f seconds)\n",(long long)(1e9 * s1), s1);
-    printf("O(n^3): %lld ns per call (%f seconds)\n",(long long)(1e9 * s2), s2);
-    free(str);  
+
+    write_to_csv(data, file);
+    cleanup_data(data);
     fclose(file); 
 }
 
-void benchmark_suffix_array(int str_len, int tries, int asize) {
-    printf("Running benchmark on suffix arrays %d times with random strings[1...%d], |∑| = %d\n", tries, str_len, asize); 
+void benchmark(int *(*f)(int*, int), int *(*f_naive)(int*, int), data_frame *data, StrType str_type, int str_len, int tries, int asize, int datapoint) {
+    double ssa = 0, ssaq = 0;
+    long long nssa = 0, nssaq = 0;
+    int *str = NULL;
+    int n = 0;
 
-    int *str = malloc((str_len+ADDITIONAL_PADDING) * sizeof(int));
-    double s1 = 0, s2 = 0;
     for (int i = 0; i < tries; i++) {
-        str = random_str(str, str_len, asize);
-        s1 += timeit(suffix_array, str, str_len);
-        s2 += timeit(suffix_array_qsort, str, str_len);
-    }
-    s1 /= tries;
-    s2 /= tries;
+        switch (str_type) {
+            case RANDOM:
+                str = random_str(str, str_len, asize);
+                n = str_len;
+                break;
+            case FIBONACCI:
+                str = fib_str(str, str_len);
+                n = fibonacci(str_len);
+                asize = 2;
+                break;
+            default:
+                str = random_str(str, str_len, asize);
+                n = str_len;
+                break;
+        }
 
-    printf("O(n):     %lld ns per call (%f seconds)\n",(long long)(1e9 * s1), s1);
-    printf("O(nlogn): %lld ns per call (%f seconds)\n",(long long)(1e9 * s2), s2);
-    free(str);   
+        ssa += timeit(f, str, n);
+        ssaq += timeit(f_naive, str, n);
+        // ssaq += 0;
+    }
+    free(str);
+
+    ssa /= tries;
+    ssaq /= tries;
+    nssa = SEC_TO_NANO(ssa);
+    nssaq = SEC_TO_NANO(ssaq);
+
+    data->data[datapoint][0] = n;
+    data->data[datapoint][1] = str_type;
+    data->data[datapoint][2] = tries;
+    data->data[datapoint][3] = asize;
+    data->data[datapoint][4] = nssa;
+    data->data[datapoint][5] = nssaq;
+    
+    printf("Alg1: %lld ns per call (%f seconds), total: %f seconds\n", nssa, ssa, ssa * tries);
+    printf("Alg2: %lld ns per call (%f seconds), total: %f seconds\n", nssaq, ssaq, ssaq * tries);
 }
 
 double timeit(int *(*f)(int*, int), int *str, int str_len) {
@@ -136,20 +176,4 @@ double timeit(int *(*f)(int*, int), int *str, int str_len) {
     double seconds = (double)(clock() - start) / CLOCKS_PER_SEC;
     free(sa);
     return seconds;
-}
-
-int *random_str(int *str, int str_len, int asize) {
-    if (str == NULL) {
-        str = malloc(str_len * sizeof(int));
-    }
- 
-    srand((unsigned int)time(NULL));
-
-    for (int i = 0; i < str_len; i++) {
-        str[i] = (rand() % asize) + 97;
-    }
-    for (int j = str_len; j < str_len+ADDITIONAL_PADDING; j++) {
-        str[j] = 0;
-    }
-    return str;
 }
