@@ -15,7 +15,7 @@
 #include <time.h>
 
 void print_help() {
-    printf("Usage: program_name [options]\n");
+    printf("Usage: ./lpf [options]\n");
     printf("Options:\n");
     printf("  -h, --help                                    Display this help message\n");
     printf("  -l, --lpf                                     Calculate the lpf array\n");

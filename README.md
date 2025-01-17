@@ -21,3 +21,22 @@ aba <b>bbababaa</b> abbababaabaabbbaa w[4...4 + 8 - 1]
 
 ![LPF fib results](results/lpf_fib_benchmark.png)
 ![SA fib results](results/sa_fib_benchmark.png)
+
+## Build 
+
+```
+make 
+```
+
+```
+Usage: ./lpf [options]
+Options:
+    -h, --help                                        Display this help message
+    -l, --lpf                                         Calculate the lpf array
+    -s, --suffix                                      Calculate the suffix and lcp arrays
+    -v, --validate [sl][fr] <length> <tries> <asize>  Validate the [sl] agains the naive method <tries> random strings of length <length>
+    -b, --benchmark [sl][fr] <length> <tries> <asize> Perform a benchmark with a random string[1...<length>], <tries> times
+    Example:
+        ./PATH/TO/PROGRAM/lpf -b lr 1000000 10 2    runs a benchmark of the lpf algorithm on random strings of length 1000000, 10 times, with alphabet size 2
+        ./PATH/TO/PROGRAM/lpf -s                    presents a user input and calculates the suffix array 
+```
