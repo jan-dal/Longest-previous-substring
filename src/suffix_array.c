@@ -1,7 +1,8 @@
-#include "suffix_array.h"
-#include "constants.h"
 #include "tuple.h"
 #include "radix.h"
+#include "constants.h"
+#include "suffix_array.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -75,6 +76,7 @@ int *suffix_array(int *str, int str_len) {
         free(tinfo12->tuple_sorting);
         tinfo12->tuple_sorting = sa12;
     }
+    free(tuple_names);
 
     tinfo12->positions = reorder(tinfo12->positions, tinfo12->tuple_sorting, tinfo12->total_blocks);
     tinfo12->tuple_type = reorder(tinfo12->tuple_type, tinfo12->tuple_sorting, tinfo12->total_blocks);
@@ -117,7 +119,7 @@ int *merge(int *str, int str_len, tuple_info *tinfo0, tuple_info *tinfo12) {
     LOG_MESSAGE("Merging\n");
     int extra_block = str_len % 3 == 1;
 
-    int *sa12r = reverse_suffix_array(tinfo12->positions, tinfo12->total_blocks,str_len+ADDITIONAL_PADDING);
+    int *sa12r = _reverse_suffix_array(tinfo12->positions, tinfo12->total_blocks,str_len+ADDITIONAL_PADDING);
     // to_bign(sa12r, str_len+ADDITIONAL_PADDING);
 
     int *str0 = _create_str(str, tinfo0->positions, tinfo0->total_blocks, 0);
@@ -209,19 +211,20 @@ int *merge(int *str, int str_len, tuple_info *tinfo0, tuple_info *tinfo12) {
 }
 
 /**
-* @brief Create the reverse of a suffix array.
+* @brief Create the reverse of a suffix array (with +1 to all entries).
 *
-* Given suffix array SA create SA^-1 where SA^-1[i] = j if SA[j] = i 
+* Given suffix array SA create SA^-1 where SA^-1[i] = j+1 if SA[j] = i 
 *
-* @param[in] suffix_array The suffix array.
-* @param[in] len Length of suffix_array.
+* @param[in] positions The positions in suffix array.
+* @param[in] pos_len The length of positions. 
+* @param[in] out_len Length of the whole suffix_array. (suffix array might be shorter if we create SA^-1 from SA12) 
 *
-* @return Returns the reversed suffix array.
+* @return Returns the reversed suffix array + 1.
 **/
-int *reverse_suffix_array(int *positions, int elements, int len) {
+int *_reverse_suffix_array(int *positions, int pos_len, int out_len) {
     LOG_MESSAGE("Reversing suffix array\n");
-    int *sar = calloc(len, sizeof(int));
-    for (int i = 0; i < elements; i++) {
+    int *sar = calloc(out_len, sizeof(int));
+    for (int i = 0; i < pos_len; i++) {
         sar[positions[i]] = i+1;
     }
     LOG_MESSAGE("Reversing successful\n");

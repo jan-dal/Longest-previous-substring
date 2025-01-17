@@ -1,9 +1,9 @@
 #include "tuple.h"
 #include "constants.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 
 /**
 * @brief Assign to the input tuples a new letter from the alphabet.
@@ -124,59 +124,10 @@ int compare_tuples(int *t1, int *t2, int len) {
     return 0;
 }
 
-void print_tuple_info(tuple_info *tinfo) {
-    int *tmp = malloc(sizeof(int) * tinfo->total_blocks);
-    for (int i = 0; i < tinfo->total_blocks; i++) {
-        tmp[tinfo->tuple_sorting[i]] = i;
-    }
-    
-    printf("TUPLES:\nNumber of all blocks: %d\nPOS\t|\tTYPE\t|\tSORTING\t|\tVALUES\n", tinfo->total_blocks);
-    for (int i=0; i < tinfo->total_blocks; i++) {
-        printf("%d\t|\t%d\t|\t%d\t|\t%d\t|\t", tinfo->positions[i], tinfo->tuple_type[i], tinfo->tuple_sorting[i], tmp[i]);
-
-        for (int j=0; j < TUPLE_SIZE; j++) {
-            int val = tinfo->values[i][j];
-            printf(isprint(val) ? "%c " : "'%d' ", val);
-            // printf("%d ", val);
-        }
-        printf("\n");
-    }
-    free(tmp);
-}
-
-
-void print_sa_from_tinfo(int *str, int str_len, tuple_info *tinfo, char *title) {
-    printf("\n%s\n", title);
-    printf("Sorting: ");
-    for (int i = 0; i < tinfo->total_blocks; i++) {
-        printf("%d ", tinfo->tuple_sorting[i]);
-    } 
-    printf("\n");
-    for (int i = 0; i < tinfo->total_blocks; i++) {
-        int pos = tinfo->positions[i];
-        printf("%d ", pos);
-        printf_line(str+pos, str_len-pos );
-        printf("\n");
-    }
-    printf("\n");
-}  
-
 void cleanup_tinfo(tuple_info *tinfo) {
     free(tinfo->values);
     free(tinfo->positions);
     free(tinfo->tuple_type);
     free(tinfo->tuple_sorting);
     free(tinfo);
-}
-
-void printf_line(int *str, int str_len) {
-    printf("[");
-    for (int i = 0; i < str_len-1; i++) {
-        int val = str[i];
-        // printf("%d, ", val);
-        printf(isprint(val) ? "%c " : "%d ", val);
-        // printf("%d, ", val);
-    }
-    printf(isprint(str[str_len-1]) ? "%c]" : "%d]", str[str_len-1]);
-    printf("\n");
 }

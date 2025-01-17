@@ -1,6 +1,6 @@
 #include "suffix_array.h"
+
 #include <stdlib.h>
-#include <stdio.h>
 
 /**
 * @brief Calculates the longest common prefix table.
@@ -16,36 +16,53 @@
 * @param[in] sa Suffix array.
 * @param[in] len Length of sa.
 *
-* @return Returns the LCP array.
+* @return Returns the LCP array (First index is not relevant).
 **/
-int *lcp_array(int *str, int *sa, int len) {
-    int *sar = reverse_suffix_array(sa, len, len);
+int *lcp_array(int *str, int *sa, int *sar, int len) {
     int *lcp = malloc(len * sizeof(int));
 
     lcp[0] = 0;
     int k = 0;
 
     for (int i = 0; i < len; i++) {
-        int pos = sar[i]-1;
-        if (pos == 0) {continue;}
-        int ppos = sa[pos - 1];
-        int m = ppos > i ? len - ppos - k : len - i - k;        
+        int pos = sar[i];
+        if (pos > 0) {
+            int ppos = sa[pos - 1];
+            int m = ppos > i ? len - ppos - k : len - i - k;        
 
-        int inc = 0;
-        for (int j = 0; j < m; j++) {
-            if (str[ppos + j + k] != str[i + j + k]) {
-                break;
+            int inc = 0;
+            for (int j = 0; j < m; j++) {
+                if (str[ppos + j + k] != str[i + j + k]) {
+                    break;
+                }
+                inc++;
             }
-            inc++;
-        }
-        k += inc;
-        lcp[pos] = k;
+            k += inc;
+            lcp[pos] = k;
 
-        if (k > 0) {
-            k--;
+            if (k > 0) {
+                k--;
+            }
         }
     }
-    free(sar);
-
     return lcp;
+}
+
+/**
+* @brief Calculates the reverse of the given array.
+*
+* Given arr[0,...,n] where each x in arr is not larger than n-1 
+* calculates arrR[0,...,n] where arr[arrR[i]] = i
+*
+* @param[in] arr Array.
+* @param[in] len Length of the array.
+*
+* @return Returns the reversed array
+**/
+int *reverse_array(int *arr, int len) {
+    int *arr_rev = malloc(len * sizeof(int));
+    for (int i = 0; i < len; i++) {
+        arr_rev[arr[i]] = i;
+    } 
+    return arr_rev;
 }

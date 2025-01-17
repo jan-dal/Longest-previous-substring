@@ -4,7 +4,7 @@
 #define SUFFIX_ARRAY_H
 
 int *suffix_array(int *str, int str_len);
-int *reverse_suffix_array(int *tinfo, int elements, int len);
+int *_reverse_suffix_array(int *positions, int pos_len, int out_len) ;
 
 int *merge(int *str, int str_len, tuple_info *tinfo0, tuple_info *tinfo12);
 
