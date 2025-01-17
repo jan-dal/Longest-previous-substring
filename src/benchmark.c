@@ -108,13 +108,13 @@ void benchmark_runner(Algorithm alg, StrType str_type, int str_len, int tries, i
         perror("Error opening file");
     }
 
-    int datapoints = 10;
+    int datapoints = 28;
     data_frame *data = create_data_frame(datapoints, filename, header);
 
     for (int i = 0; i < datapoints; i++) {
         // str_len = (2 << i) + (2 << (i-1));
         // str_len = (2 << i);
-        str_len = i+24;
+        str_len = i+2;
         printf("String length: %d\n", str_len);
         benchmark(f, f_naive, data, str_type, str_len, tries, asize, i);
         printf("\n");

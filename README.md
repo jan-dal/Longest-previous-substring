@@ -20,3 +20,4 @@ aba <b>bbababaa</b> abbababaabaabbbaa w[4...4 + 8 - 1]
 ## Results
 
 ![LPF fib results](results/lpf_fib_benchmark.png)
+![SA fib results](results/sa_fib_benchmark.png)
