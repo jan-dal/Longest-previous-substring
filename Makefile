@@ -1,9 +1,9 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2
+CFLAGS = -Wall -Wextra -O3
 DFLAGS = -g -O0
 TARGET = lpf
 DTARGET = lpf_debug
-SRC = main.c lpf.c suffix_array.c
+SRC = $(wildcard src/*.c)
 
 all: $(TARGET)
 
