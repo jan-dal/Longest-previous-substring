@@ -8,36 +8,10 @@
 #include <stdio.h>
 #include <byteswap.h>
 
-// TEST: abbbaabbbabbb 
-
-// TEST: babbaabbabaaaaabbabbababbbaabbaabbaabbbbababaaabaaaabaaababbbbbbabbbaabbbbabbaaaabaabaababaaabbabaabababaabbbbbbaabaaabbbbbaaaabaababbbbaabbaaaaaaababababbbbaababbababbbaabbabbaaaabaaabbbabbbabaaabbbaabbbbaaaabaabaababbbabbbbbbabaabbbabaababbabaaaabbbaabbaababbbabaaaabbbaabbaababbabbbbbbaabbbbabaaabbbbaabaaababbbbaaabaaaabaababbbaaaaabbbaabbbaabbbabbbbbbaabbbabbaababaabbbaaabbbbaaa
+// Test cases which were wrongly calculated at first
+// abbbaabbbabbb 
+// babbaabbabaaaaabbabbababbbaabbaabbaabbbbababaaabaaaabaaababbbbbbabbbaabbbbabbaaaabaabaababaaabbabaabababaabbbbbbaabaaabbbbbaaaabaababbbbaabbaaaaaaababababbbbaababbababbbaabbabbaaaabaaabbbabbbabaaabbbaabbbbaaaabaabaababbbabbbbbbabaabbbabaababbabaaaabbbaabbaababbbabaaaabbbaabbaababbabbbbbbaabbbbabaaabbbbaabaaababbbbaaabaaaabaababbbaaaaabbbaabbbaabbbabbbbbbaabbbabbaababaabbbaaabbbbaaa
 // 180, 181, 182, 183, 275, 276
-
-int *reorder(int *arr, int *sorting, int len) {
-    int *reorder = malloc(len * sizeof(int));
-    for (int i = 0; i < len; i++) {
-        reorder[i] = arr[sorting[i]];
-    }
-    free(arr);
-    return reorder;
-}
-
-void to_bign(int *values, int len) {
-    for (int i = 0; i < len; i++) {
-        values[i] = bswap_32(values[i]);
-    }
-}
-
-
-int *_create_str(int *str, int *positions, int len, int a) {
-    int *str0 = malloc(len * sizeof(int));
-    for (int i=0; i < len; i++) {
-        // str0[i] = bswap_32(str[positions[i] + a]);
-        str0[i] = str[positions[i] + a];
-
-    }
-    return str0;
-}
 
 /**
 * @brief Compute the suffix array for a given string.
@@ -106,14 +80,16 @@ int *suffix_array(int *str, int str_len) {
 /**
 * @brief Merge the array of suffixes mod 0 and the array of suffixes mod 1, mod 2.
 *
-* Given the suffix arrays m0 and m12 merge them to get the whole suffix array.
+* Given the suffix arrays SA0 and SA12 merge them to get the whole suffix array.
+* Notice that the algorithm assumes that the positions in tinfo0 and tinfo12
+* are already sorted.
 *
-* @param[in] str The suffix array mod 0.
-* @param[in] str_len The sorting of sa_0.
-* @param[in] tinfo0 The suffix array mod 1,2.
-* @param[in] tinfo12 The sorting of sa_12.
+* @param[in] str The input string.
+* @param[in] str_len The length of the input string.
+* @param[in] tinfo0 Tuple info mod 3 = 0.
+* @param[in] tinfo12 Tuple infor mod 3 = 1,2.
 *
-* @return Returns the reversed suffix array.
+* @return Returns the merged suffix array of SA0 and SA12.
 **/
 int *merge(int *str, int str_len, tuple_info *tinfo0, tuple_info *tinfo12) {
     LOG_MESSAGE("Merging\n");
@@ -208,6 +184,40 @@ int *merge(int *str, int str_len, tuple_info *tinfo0, tuple_info *tinfo12) {
     free(str012);
 
     return sa;
+}
+
+/**
+* @brief Reorder the input array according to a sorted-indices array.
+*
+* @return Returns a pointer to the sorted array.
+**/
+int *reorder(int *arr, int *sorting, int len) {
+    int *reorder = malloc(len * sizeof(int));
+    for (int i = 0; i < len; i++) {
+        reorder[i] = arr[sorting[i]];
+    }
+    free(arr);
+    return reorder;
+}
+
+/**
+* @brief A trick to make merging faster.
+*
+* Improves spatial locallity and reduces cache misses. It orders
+* the values which are needed to create pairs and triplets to
+* compare in the merge part of the algorithm.
+* The resulting array can be walked index by index instead of 
+* random jumps. 
+*
+* @return Returns a pointer to a sorted array.
+**/
+int *_create_str(int *str, int *positions, int len, int a) {
+    int *str0 = malloc(len * sizeof(int));
+    for (int i=0; i < len; i++) {
+        str0[i] = str[positions[i] + a];
+
+    }
+    return str0;
 }
 
 /**

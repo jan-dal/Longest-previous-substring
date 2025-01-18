@@ -38,9 +38,15 @@ int *name_tuples(tuple_info *tinfo) {
     return tuple_names;
 }
 
-
 /**
 * @brief Creates the tuple info structure for str.
+*
+* The structure hold information about every group of 3 
+* consecutive letters which begin on positions i where
+* i mod 3 = 1 or i mod 3 = 2. That means we take roughly
+* 2/3 of all letters from the input string. The structure
+* later is extended to hold information about the sorting
+* and naming of the tuples. 
 *
 * @param[in] str The input string.
 * @param[in] str_len String length.
@@ -82,6 +88,23 @@ tuple_info *str_to_tuples(int *str, int str_len) {
     return tinfo;
 }
 
+/**
+* @brief Creates the tuple info structure for str on positions divisible by 3.
+*
+* After the algorithm created SA12 (suffix array for entries
+* on positions mod 3 = 1,2) it proceeds to do the same for 
+* entries on positions mod 3 = 0. It uses the gathered information
+* from SA12 that is: If we add a letter at the beginning
+* of each sorted suffix which starts on positions mod 3 = 1
+* (we create suffixes mod 3 = 0) then to sort the new words we
+* just need to sort according to the added letters which 
+* requires just one pass of the radix algorithm. 
+*
+* @param[in] tinfo12 Should hold information about SA12 to this point
+* @param[in] str The input string.
+* @param[in] str_len The input string length.
+*
+**/
 tuple_info *create_t0_ordered(tuple_info *tinfo12, int *str, int str_len) {
     LOG_MESSAGE("Creating t0\n");
     tuple_info *tinfo0 = malloc(sizeof(tuple_info));

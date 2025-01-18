@@ -8,8 +8,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-adjacent *create_adjacent(int *lcp, int len) {
-    adjacent *adj = malloc(len * sizeof(adjacent));
+/**
+* @brief Create a helper table for the LPF algorithm.
+*
+* The table consists of entries which hold information about
+* the previous entry and the next entry similar to a double
+* linked list. Its purpose is to track logically removed
+* entries and updated entries from the SA and LCP array.
+*
+* Each binode entry holds the LCP value with its closest previous
+* and next neighbours which were not yet removed.
+*
+* Example:
+* If we remove entry SA[i] 0 < i < len(SA) then the value
+* of LCP[i+1] should now reflect the LCP of SA[i-1] and SA[i+1].
+*
+*   
+* @param[in] lcp The LCP array.
+* @param[in] len Length of the LCP array.
+*
+* @return Returns the LCP tracking/helper array.
+**/
+binode *create_adjacent(int *lcp, int len) {
+    binode *adj = malloc(len * sizeof(binode));
 
     adj[0].prev = -1;
     adj[0].prev_val = 0;
@@ -34,12 +55,19 @@ adjacent *create_adjacent(int *lcp, int len) {
 /**
 * @brief Create the longest previous substring table.
 *
-* Given suffix array SA and its LCP array calculate the LPF table.
-* 
 * Definition: 
 * Given a string w[1...n], LPF[i] = k such that w[i...i+k-1] 
 * occurs somewhere before i that is there exists j where
 * w[i...i+k-1] = w[j...j+k-1] and j < i.
+
+* The algorithm uses the observation that if we have SA and LCP
+* for str[1...n] then LPF[n] = LCP[n]. If we then remove this
+* entry (SA[SA^(-1)[n]]) from the table then we can calculate n-1 
+* and so on.
+*
+* Each time the LCP table needs to be updated which is a constant
+* operation. LCP of SA[i-1] and SA[i+1] is:
+* min(LCP[i], LCP[i+1])
 *   
 * @param[in] str Input text.
 * @param[in] str_len Length of text.
@@ -51,7 +79,7 @@ int *lpf_array(int *str, int str_len) {
     int *sar = reverse_array(sa, str_len);
     int *lcp = lcp_array(str, sa, sar,str_len);  
     int *lpf = calloc(str_len, sizeof(int));
-    adjacent *adj = create_adjacent(lcp, str_len);
+    binode *adj = create_adjacent(lcp, str_len);
 
     LOG_FUNC(print_suffix_array, str, sa, str_len);
 

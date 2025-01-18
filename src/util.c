@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <time.h>
 
+// Used for printing purposes
 int find_prev(int *str, int i, int k) {
     for (int j = i-1; j >= 0; j--) {
         if (!memcmp(str+j, str+i, k * sizeof(int))) {
