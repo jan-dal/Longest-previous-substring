@@ -86,7 +86,7 @@ void benchmark_runner(Algorithm alg, StrType str_type, int str_len, int tries, i
 
     switch (alg) {
         case SUFFIX_ARRAY:
-            printf("Running benchmark on lpf arrays %d times with random strings[1...%d], |∑| = %d\n", tries, str_len, asize); 
+            printf("Running benchmark on suffix arrays %d times with random strings[1...%d], |∑| = %d\n", tries, str_len, asize); 
             f = suffix_array, f_naive = suffix_array_qsort; 
             filename = SA_BENCH_FILENAME;
             break;
@@ -111,16 +111,24 @@ void benchmark_runner(Algorithm alg, StrType str_type, int str_len, int tries, i
     int datapoints = 28;
     data_frame *data = create_data_frame(datapoints, filename, header);
 
-    for (int i = 0; i < datapoints; i++) {
-        // str_len = (2 << i) + (2 << (i-1));
-        // str_len = (2 << i);
-        str_len = i+2;
-        printf("String length: %d\n", str_len);
-        benchmark(f, f_naive, data, str_type, str_len, tries, asize, i);
-        printf("\n");
+    // for (int i = 0; i < datapoints; i++) {
+    //     // str_len = (2 << i) + (2 << (i-1));
+    //     // str_len = (2 << i);
+    //     str_len = i+2;
+    //     printf("String length: %d\n", str_len);
+    //     benchmark(f, f_naive, data, str_type, str_len, tries, asize, i);
+    //     printf("\n");
+    // }
+
+    if (str_type == FIBONACCI) {
+        benchmark(f, f_naive, data, str_type,  str_len, tries, asize, 0);
+    } else {
+        benchmark(f, f_naive, data, str_type, str_len, tries, asize, 0);
     }
 
-    write_to_csv(data, file);
+
+
+    // write_to_csv(data, file);
     cleanup_data(data);
     fclose(file); 
 }
