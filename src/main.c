@@ -17,14 +17,17 @@
 void print_help() {
     printf("Usage: ./lpf [options]\n");
     printf("Options:\n");
-    printf("  -h, --help                                    Display this help message\n");
-    printf("  -l, --lpf                                     Calculate the lpf array\n");
-    printf("  -s, --suffix                                  Calculate the suffix and lcp arrays\n");
-    printf("  -v, --validate [sl] <length> <tries> <asize>  Validate the [sl] agains the naive method <tries> random strings of length <length>\n");
-    printf("  -b, --benchmark [sl] <length> <tries> <asize> Perform a benchmark with a random string[1...<length>], <tries> times\n");
+    printf("  -h, --help                                        Display this help message\n");
+    printf("  -l, --lpf                                         Calculate the lpf array\n");
+    printf("  -s, --suffix                                      Calculate the suffix and lcp arrays\n");
+    printf("  -v, --validate [sl][rf] <length> <tries> <asize>  Validate the [sl] agains the naive method <tries> random strings of length <length>\n");
+    printf("  -b, --benchmark [sl][rf] <length> <tries> <asize> Perform a benchmark with a random string[1...<length>], <tries> times\n");
     printf("Example:\n");
-    printf("  ./PATH/TO/PROGRAM/lpf -b 1000000 10\n");
+    printf("  ./PATH/TO/PROGRAM/lpf -b sr 1000000 10 3\n");
     printf("  ./PATH/TO/PROGRAM/lpf -s\n");
+    printf("In case of fibonacci numbers ('f' argument) <length> means the #fibonnaci word\n");
+    printf("  ./PATH/TO/PROGRAM/lpf -v lf 10 1 2  Validate LPF arrays on the 10th fibonacci word (asize is by definition 2)\n");
+    printf("  ./PATH/TO/PROGRAM/lpf -b sr 10000 10 4  Benchmark suffix arrays on random words of length 10000, 10 times with alphabet size 4.\n");
 }
 
 void suffix_array_from_input() { 

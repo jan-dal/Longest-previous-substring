@@ -34,9 +34,12 @@ Options:
     -h, --help                                        Display this help message
     -l, --lpf                                         Calculate the lpf array
     -s, --suffix                                      Calculate the suffix and lcp arrays
-    -v, --validate [sl][fr] <length> <tries> <asize>  Validate the [sl] agains the naive method <tries> random strings of length <length>
-    -b, --benchmark [sl][fr] <length> <tries> <asize> Perform a benchmark with a random string[1...<length>], <tries> times
+    -v, --validate [sl][rf] <length> <tries> <asize>  Validate the [sl] agains the naive method <tries> random strings of length <length>
+    -b, --benchmark [sl][rf] <length> <tries> <asize> Perform a benchmark with a random string[1...<length>], <tries> times
     Example:
-        ./PATH/TO/PROGRAM/lpf -b lr 1000000 10 2    runs a benchmark of the lpf algorithm on random strings of length 1000000, 10 times, with alphabet size 2
-        ./PATH/TO/PROGRAM/lpf -s                    presents a user input and calculates the suffix array 
+        ./PATH/TO/PROGRAM/lpf -b lr 1000000 10 3
+        ./PATH/TO/PROGRAM/lpf -s
+    In case of fibonacci numbers ('f' argument) <length> means the #fibonnaci word
+        ./PATH/TO/PROGRAM/lpf -v lf 10 1 2  Validate LPF arrays on the 10th fibonacci word (asize is by definition 2)
+        ./PATH/TO/PROGRAM/lpf -b sr 10000 10 4  Benchmark suffix arrays on random words of length 10000, 10 times with alphabet size 4
 ```
